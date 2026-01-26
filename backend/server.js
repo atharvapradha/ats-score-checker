@@ -2,6 +2,8 @@ const express=require("express");
 const cors=require("cors");
 require("dotenv").config();
 const app=express();
+const resumeRoutes = require("./routes/resumeRoutes");
+app.use("/api/resume", resumeRoutes);
 app.use(cors());
 app.use(express.json());
 app.get("/",(req,res)=> {
