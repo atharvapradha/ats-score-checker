@@ -1,3 +1,75 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* -------------------------
+   GLOBAL BASE STYLES
+-------------------------- */
+
+:root {
+  --background: #0b0f14;
+  --foreground: #e5e7eb;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* -------------------------
+   GRADIENT UTILITIES
+-------------------------- */
+
+.gradient-primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.gradient-hero {
+  background: radial-gradient(circle at top, #1e3a8a, #020617);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #3b82f6, #22c55e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* -------------------------
+   CARD & SHADOW HELPERS
+-------------------------- */
+
+.shadow-card {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.35);
+}
+
+/* -------------------------
+   OPTIONAL SMOOTH SCROLL
+-------------------------- */
+
+html {
+  scroll-behavior: smooth;
+}
+.input {
+  @apply w-full rounded-lg border border-border bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary;
+}
+
+.textarea {
+  @apply w-full rounded-lg border border-border bg-background px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary;
+}
