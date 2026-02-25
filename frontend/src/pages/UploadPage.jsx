@@ -5,17 +5,21 @@ import {
   Upload,
   ArrowLeft,
   ArrowRight,
-  File,
-  X,
   CheckCircle,
 } from "lucide-react";
+
+// ✅ STEP 1: Import API functions
+import { uploadResume, analyzeResume } from "../services/api";
 
 const UploadPage = () => {
   const navigate = useNavigate();
 
+  // ✅ STEP 2: State additions
   const [resumeFile, setResumeFile] = useState(null);
+  const [resumeText, setResumeText] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
@@ -43,6 +47,7 @@ const UploadPage = () => {
     }
   }, []);
 
+  // ✅ STEP 3: Handle file selection
   const handleFileSelect = (e) => {
     const files = e.target.files;
     if (files && files.length > 0) {
@@ -50,8 +55,36 @@ const UploadPage = () => {
     }
   };
 
-  const handleAnalyze = () => {
-    navigate("/results");
+  // ✅ STEP 4: Upload resume + analyze via backend & NLP
+  // 🔑 THIS IS STEP 4.1 (UploadPage → ResultPage)
+  const handleAnalyze = async () => {
+    if (!resumeFile) return;
+
+    try {
+      setLoading(true);
+
+      // 1️⃣ Upload resume → backend
+      const uploadResponse = await uploadResume(resumeFile);
+      setResumeText(uploadResponse.resumeText);
+
+      // 2️⃣ Send resumeText + JD → backend → NLP
+      const analysisResult = await analyzeResume(
+        uploadResponse.resumeText,
+        jobDescription
+      );
+
+      // 3️⃣ STEP 4.1:
+      // 👉 Redirect to ResultPage WITH analysis data
+      navigate("/results", {
+        state: analysisResult,
+      });
+
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      alert("Failed to analyze resume. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isReadyToAnalyze =
@@ -155,17 +188,6 @@ const UploadPage = () => {
                       <p className="text-sm text-muted mb-4">
                         or click to browse files
                       </p>
-                      <div className="flex justify-center gap-2 text-xs text-muted">
-                        <span className="px-2 py-1 bg-card rounded">
-                          PDF
-                        </span>
-                        <span className="px-2 py-1 bg-card rounded">
-                          DOC
-                        </span>
-                        <span className="px-2 py-1 bg-card rounded">
-                          DOCX
-                        </span>
-                      </div>
                     </>
                   )}
                 </div>
@@ -204,7 +226,7 @@ const UploadPage = () => {
           <div className="mt-12 text-center animate-fade-in">
             <button
               onClick={handleAnalyze}
-              disabled={!isReadyToAnalyze}
+              disabled={!isReadyToAnalyze || loading}
               className={`px-10 py-5 rounded-lg text-lg font-semibold transition
                 ${
                   isReadyToAnalyze
@@ -212,7 +234,7 @@ const UploadPage = () => {
                     : "bg-card text-muted cursor-not-allowed"
                 }`}
             >
-              Analyze Resume
+              {loading ? "Analyzing..." : "Analyze Resume"}
               <ArrowRight className="inline ml-2 w-5 h-5" />
             </button>
 
@@ -221,29 +243,6 @@ const UploadPage = () => {
                 Upload resume & add job description to continue
               </p>
             )}
-          </div>
-
-          {/* Tips */}
-          <div className="mt-16 bg-card rounded-2xl p-8 shadow-card animate-fade-in">
-            <h3 className="font-display font-semibold mb-4">
-              💡 Tips for Best Results
-            </h3>
-            <div className="grid md:grid-cols-2 gap-4 text-sm text-muted">
-              {[
-                "Use a PDF format for accurate parsing",
-                "Copy the complete job description",
-                "Ensure clear section headings",
-                "Include keywords from the job posting",
-              ].map((tip) => (
-                <div
-                  key={tip}
-                  className="flex items-start gap-3"
-                >
-                  <CheckCircle className="w-4 h-4 text-accent mt-1" />
-                  <span>{tip}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </main>

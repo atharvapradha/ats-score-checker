@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FileText,
   ArrowLeft,
@@ -22,6 +22,10 @@ import financialAnalystTemplate from "@/assets/templates/financial-analyst.png";
 import fullStackDeveloperTemplate from "@/assets/templates/full-stack-developer.png";
 import productManagerTemplate from "@/assets/templates/product-manager.png";
 import supplyChainManagerTemplate from "@/assets/templates/supply-chain-manager.png";
+
+/*================== JSX TEMPLATE CODE FILES========*/
+
+import BusinessAnalystTemplate from "../assets/templates/JSXTemplates/BusinessAnalystTemplate";
 
 /* ================= TEMPLATE LIST ================= */
 const templates = [
@@ -64,6 +68,22 @@ const EnhancePage = () => {
   const [skillInput, setSkillInput] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const analysisData = location.state;
+
+  if (!analysisData) {
+    navigate("/result");
+    return null;
+  }
+
+  const {
+    recommendedTemplates = [],
+    suggestions = [],
+    improvements = []
+  } = analysisData;
+
+  /* ================= PAGINATION ================= */
   const templatesPerPage = 6;
   const totalPages = Math.ceil(templates.length / templatesPerPage);
   const displayedTemplates = templates.slice(
@@ -132,7 +152,6 @@ const EnhancePage = () => {
         </nav>
 
         <main className="pt-28 max-w-4xl mx-auto px-6 space-y-8">
-
           {/* PERSONAL INFO */}
           <div className="bg-card rounded-2xl p-6">
             <h3 className="font-semibold mb-4 border-b pb-2">Personal Information</h3>
@@ -240,32 +259,56 @@ const EnhancePage = () => {
     );
   }
 
-  /* ================= PREVIEW MODE ================= */
-  if (selectedTemplate) {
-    return (
-      <div className="min-h-screen bg-background">
-        <nav className="fixed top-0 left-0 right-0 border-b bg-background/80 backdrop-blur z-50">
-          <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between">
-            <button onClick={() => setSelectedTemplate(null)} className="flex items-center gap-2">
-              <ArrowLeft size={16} /> Back
+/* ================= PREVIEW MODE ================= */
+if (selectedTemplate) {
+  return (
+    <div className="min-h-screen bg-background">
+      <nav className="fixed top-0 left-0 right-0 border-b bg-background/80 backdrop-blur z-50">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between">
+          <button onClick={() => setSelectedTemplate(null)} className="flex items-center gap-2">
+            <ArrowLeft size={16} /> Back
+          </button>
+          <div className="flex gap-3">
+            <button onClick={() => setIsEditing(true)} className="border px-4 py-2 rounded flex gap-2">
+              <Edit3 size={16} /> Edit
             </button>
-            <div className="flex gap-3">
-              <button onClick={() => setIsEditing(true)} className="border px-4 py-2 rounded flex gap-2">
-                <Edit3 size={16} /> Edit
-              </button>
-              <button className="bg-primary text-white px-4 py-2 rounded flex gap-2">
-                <Download size={16} /> Download
-              </button>
-            </div>
+            <button className="bg-primary text-white px-4 py-2 rounded flex gap-2">
+              <Download size={16} /> Download
+            </button>
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        <main className="pt-28 max-w-4xl mx-auto px-6">
-          <img src={selectedTemplate.image} className="rounded-xl shadow" />
-        </main>
-      </div>
-    );
-  }
+      <main className="pt-28 max-w-4xl mx-auto px-6">
+        {selectedTemplate.id === "business-analyst" ? (
+  <BusinessAnalystTemplate
+  data={{
+    ...resumeData,
+    education: {
+      university: "Resume Worded University",
+      location: "San Francisco, CA",
+      degree: "Master of Engineering",
+      major: "Business Analytics",
+      year: "2015"
+    },
+    skillsColumns: [
+      resumeData.skills || [],
+      [],
+      [],
+      []
+    ]
+  }}
+/>
+
+) : (
+  <img src={selectedTemplate.image} className="rounded-xl shadow" />
+)}
+
+      </main>
+    </div>
+  );
+}
+
 
   /* ================= TEMPLATE GRID ================= */
   return (
@@ -281,27 +324,64 @@ const EnhancePage = () => {
         </div>
       </nav>
 
-      <main className="pt-28 max-w-6xl mx-auto px-6">
-        <h1 className="text-4xl font-bold text-center mb-10">
+      <main className="pt-28 max-w-6xl mx-auto px-6 space-y-10">
+
+        {/* SUGGESTIONS */}
+        <div className="bg-card p-6 rounded-xl">
+          <h3 className="font-semibold mb-3">Suggestions</h3>
+          <ul className="list-disc list-inside text-muted-foreground">
+            {suggestions.map((s, i) => <li key={i}>{s}</li>)}
+          </ul>
+        </div>
+
+        {/* IMPROVEMENTS */}
+        <div className="bg-card p-6 rounded-xl">
+          <h3 className="font-semibold mb-3">Improvements</h3>
+          <ul className="list-disc list-inside text-muted-foreground">
+            {improvements.map((i, idx) => <li key={idx}>{i}</li>)}
+          </ul>
+        </div>
+
+        <h1 className="text-4xl font-bold text-center">
           Choose Your <span className="text-gradient">Template</span>
         </h1>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedTemplates.map(t => (
-            <div key={t.id} onClick={() => setSelectedTemplate(t)} className="cursor-pointer bg-card rounded-xl shadow hover:-translate-y-1 transition">
-              <img src={t.image} className="rounded-t-xl h-96 w-full object-cover" />
-              <div className="p-4 flex justify-between">
-                <h3 className="font-semibold">{t.name}</h3>
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                  {t.category}
-                </span>
+          {displayedTemplates.map(t => {
+            const isRecommended = recommendedTemplates.some(r => r.id === t.id);
+            return (
+              <div
+                key={t.id}
+                onClick={() => setSelectedTemplate(t)}
+                className={`cursor-pointer bg-card rounded-xl shadow hover:-translate-y-1 transition 
+                  ${isRecommended ? "ring-2 ring-primary" : ""}`}
+              >
+                <img src={t.image} className="rounded-t-xl h-96 w-full object-cover" />
+                <div className="p-4 flex justify-between">
+                  <h3 className="font-semibold">{t.name}</h3>
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                    {isRecommended ? "Recommended" : t.category}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+        </div>
+
+        {/* CONTINUE BUTTON */}
+        <div className="flex justify-center mt-10">
+          <button
+            disabled={!selectedTemplate}
+            onClick={() => setIsEditing(true)}
+            className={`px-6 py-3 rounded font-semibold
+              ${selectedTemplate ? "bg-primary text-white" : "bg-muted cursor-not-allowed"}`}
+          >
+            Enhance Resume →
+          </button>
         </div>
 
         {totalPages > 1 && (
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-4">
             <button disabled={currentPage === 0} onClick={() => setCurrentPage(p => p - 1)}>
               <ChevronLeft />
             </button>

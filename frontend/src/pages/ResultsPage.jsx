@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom"; // ✅ UPDATED
 import {
   FileText,
   ArrowLeft,
@@ -23,32 +23,58 @@ import {
 } from "recharts";
 
 const ResultsPage = () => {
-  /* ================= MOCK DATA (API READY) ================= */
+  /* ================= RECEIVE ANALYSIS DATA ================= */
 
-  const overallScore = 72;
+  const location = useLocation(); // ✅ ADDED
+  const navigate = useNavigate(); // ✅ ADDED
+
+  // Analysis data passed from previous page
+  const analysisData = location.state; // ✅ ADDED
+
+  // 🚨 SAFETY: Redirect if user lands here without analysis data
+  if (!analysisData) {
+    navigate("/upload");
+    return null;
+  }
+
+  /* ================= MOCK DATA (FALLBACK) ================= */
+
+  const overallScore = analysisData?.atsScore ?? 72;
 
   const resumeDescription =
+    analysisData?.resumeDescription ??
     "Your resume shows strong technical fundamentals and relevant experience, but it lacks some important keywords and role-specific customization required to maximize ATS performance.";
 
-  const goodReasons = [
-    "Strong use of action verbs in experience section",
-    "Relevant technical skills are clearly mentioned",
-    "Projects include measurable achievements",
-    "Resume format is ATS-friendly (single column)",
-  ];
+  const goodReasons =
+    analysisData?.goodReasons ?? [
+      "Strong use of action verbs in experience section",
+      "Relevant technical skills are clearly mentioned",
+      "Projects include measurable achievements",
+      "Resume format is ATS-friendly (single column)",
+    ];
 
-  const badReasons = [
-    "Several important job-specific keywords are missing",
-    "Skills section does not fully match job requirements",
-    "Professional summary is too generic",
-  ];
+  const badReasons =
+    analysisData?.badReasons ?? [
+      "Several important job-specific keywords are missing",
+      "Skills section does not fully match job requirements",
+      "Professional summary is too generic",
+    ];
 
-  const suggestions = [
-    "Add missing keywords from the job description naturally",
-    "Tailor your professional summary to the target role",
-    "Include tools and technologies mentioned in the JD",
-    "Quantify impact using numbers (e.g., increased performance by 30%)",
-  ];
+  const suggestions =
+    analysisData?.suggestions ?? [
+      "Add missing keywords from the job description naturally",
+      "Tailor your professional summary to the target role",
+      "Include tools and technologies mentioned in the JD",
+      "Quantify impact using numbers (e.g., increased performance by 30%)",
+    ];
+
+  // ✅ NEW: Improvements from NLP (ADDED, NOT REPLACED)
+  const improvements =
+    analysisData?.improvements ?? [
+      "Add a dedicated Technical Skills section",
+      "Keep resume format single-column for ATS compatibility",
+      "Avoid tables and graphics that ATS systems cannot read",
+    ];
 
   const scoreBreakdown = [
     { name: "Keywords", score: 85, color: "#10b981" },
@@ -237,14 +263,33 @@ const ResultsPage = () => {
             </div>
           </div>
 
+          {/* ✅ NEW: IMPROVEMENTS SECTION (ADDED) */}
+          <div className="bg-card rounded-2xl p-8 shadow-card mb-12">
+            <h3 className="font-display font-semibold mb-6 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-warning" />
+              Resume Improvements Needed
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {improvements.map((item, i) => (
+                <div key={i} className="flex items-start gap-3 text-sm">
+                  <CheckCircle className="w-4 h-4 text-warning mt-1" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* CTA */}
           <div className="text-center">
-            <Link to="/enhance">
-              <button className="gradient-primary px-10 py-4 rounded-lg text-white font-semibold shadow-glow hover:opacity-90 transition">
-                Enhance My Resume
-                <ArrowRight className="ml-2 inline w-5 h-5" />
-              </button>
-            </Link>
+            <button
+              onClick={() =>
+                navigate("/enhance", { state: analysisData })
+              }
+              className="gradient-primary px-10 py-4 rounded-lg text-white font-semibold shadow-glow hover:opacity-90 transition"
+            >
+              Enhance My Resume
+              <ArrowRight className="ml-2 inline w-5 h-5" />
+            </button>
           </div>
         </div>
       </main>
