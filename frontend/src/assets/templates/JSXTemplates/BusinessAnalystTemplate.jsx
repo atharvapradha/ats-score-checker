@@ -2,7 +2,10 @@ const BusinessAnalystTemplate = ({ data }) => {
   if (!data) return null;
 
   return (
-    <div className="bg-white text-black p-10 shadow-lg max-w-4xl mx-auto font-sans text-sm leading-relaxed">
+    <div
+      id="resume-template"
+      className="bg-white text-black p-10 shadow-lg max-w-4xl mx-auto font-sans text-sm leading-relaxed"
+    >
 
       {/* HEADER */}
       <div className="text-center mb-4">
@@ -32,7 +35,6 @@ const BusinessAnalystTemplate = ({ data }) => {
 
         {data.experience?.map((exp, index) => (
           <div key={index} className="mt-4">
-
             <div className="flex justify-between">
               <h3 className="font-semibold">
                 {exp.company}

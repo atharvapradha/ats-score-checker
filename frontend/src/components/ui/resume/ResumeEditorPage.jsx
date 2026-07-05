@@ -1,7 +1,42 @@
 import { useState } from "react";
-import { ArrowLeft, Save, X } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, Save, Download, X } from "lucide-react";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
 
-const ResumeEditorPage = ({ resumeData, setResumeData, onBack }) => {
+const ResumeEditorPage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  /* GET DATA FROM ROUTER */
+  const { selectedTemplate, resumeData: initialData } = location.state || {};
+
+  /* LOCAL STATE */
+  const [resumeData, setResumeData] = useState(
+    initialData || {
+      name: "",
+      email: "",
+      phone: "",
+      location: "",
+      summary: "",
+      experience: [
+        {
+          company: "",
+          role: "",
+          duration: "",
+          description: ""
+        }
+      ],
+      education: {
+        university: "",
+        degree: "",
+        major: "",
+        year: ""
+      },
+      skills: []
+    }
+  );
+
   const [skillInput, setSkillInput] = useState("");
 
   /* ---------- BASIC FIELD UPDATE ---------- */
@@ -68,8 +103,40 @@ const ResumeEditorPage = ({ resumeData, setResumeData, onBack }) => {
   };
 
   /* ---------- SAVE ---------- */
-  const handleSave = () => {
-    onBack(); // return to preview
+const handleSave = () => {
+  navigate("/preview", {
+    state: {
+      selectedTemplate,
+      resumeData
+    }
+  });
+};
+
+  /* ---------- PDF EXPORT ---------- */
+  const exportPDF = async () => {
+    const node = document.getElementById("resume-template");
+
+    if (!node) {
+      alert("Resume preview not found!");
+      return;
+    }
+
+    const dataUrl = await htmlToImage.toPng(node);
+
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: "a4"
+    });
+
+    const imgProps = pdf.getImageProperties(dataUrl);
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+    pdf.save("resume.pdf");
   };
 
   return (
@@ -80,20 +147,32 @@ const ResumeEditorPage = ({ resumeData, setResumeData, onBack }) => {
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between">
 
           <button
-            onClick={onBack}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2"
           >
             <ArrowLeft size={16} />
             Back
           </button>
 
-          <button
-            onClick={handleSave}
-            className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2"
-          >
-            <Save size={16} />
-            Save
-          </button>
+          <div className="flex gap-3">
+
+            <button
+              onClick={handleSave}
+              className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2"
+            >
+              <Save size={16} />
+              Save
+            </button>
+
+            <button
+              onClick={exportPDF}
+              className="border px-4 py-2 rounded flex items-center gap-2"
+            >
+              <Download size={16} />
+              Export PDF
+            </button>
+
+          </div>
 
         </div>
       </nav>
@@ -298,6 +377,7 @@ const ResumeEditorPage = ({ resumeData, setResumeData, onBack }) => {
                 <button onClick={() => removeSkill(index)}>
                   <X size={14} />
                 </button>
+
               </span>
             ))}
           </div>
