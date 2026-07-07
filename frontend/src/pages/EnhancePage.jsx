@@ -38,7 +38,7 @@ const EnhancePage = () => {
 
   useEffect(() => {
     if (!analysisData) {
-      navigate("/result");
+      navigate("/results");
     }
   }, [analysisData, navigate]);
 
@@ -117,9 +117,9 @@ const EnhancePage = () => {
             <FileText size={18} /> ResumeAI
           </Link>
 
-          <Link to="/result" className="flex items-center gap-2">
-            <ArrowLeft size={16} /> Results
-          </Link>
+          <Link to="/results" className="flex items-center gap-2">
+    <ArrowLeft size={16} /> Results
+</Link>
 
         </div>
       </nav>

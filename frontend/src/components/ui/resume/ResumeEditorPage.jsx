@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Download, X } from "lucide-react";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
+import { rewriteResume } from "@/services/aiServices";
 
 const ResumeEditorPage = () => {
   const location = useLocation();
@@ -38,6 +39,7 @@ const ResumeEditorPage = () => {
   );
 
   const [skillInput, setSkillInput] = useState("");
+  const [isRewriting, setIsRewriting] = useState(false);
 
   /* ---------- BASIC FIELD UPDATE ---------- */
   const updateField = (field, value) => {
@@ -101,6 +103,69 @@ const ResumeEditorPage = () => {
       resumeData.skills.filter((_, i) => i !== index)
     );
   };
+  const handleAIRewrite = async () => {
+  try {
+    setIsRewriting(true);
+
+    const resumeText = `
+Name: ${resumeData.name}
+
+Summary:
+${resumeData.summary}
+
+Skills:
+${resumeData.skills.join(", ")}
+
+Experience:
+${resumeData.experience
+  .map(
+    exp => `
+${exp.role}
+${exp.company}
+${exp.description}
+`
+  )
+  .join("\n")}
+`;
+
+    const jobDescription =
+      "Looking for a Full Stack Developer with React, Node.js, Express, MongoDB, REST APIs and Git.";
+
+    const response = await rewriteResume(
+      resumeText,
+      jobDescription
+    );
+if (response.success) {
+
+    setResumeData(prev => ({
+
+        ...prev,
+
+        summary:
+            response.rewrittenResume.summary ||
+            prev.summary,
+
+        skills:
+            response.rewrittenResume.skills ||
+            prev.skills,
+
+        experience:
+            response.rewrittenResume.experience ||
+            prev.experience
+
+    }));
+
+    alert("Resume rewritten successfully!");
+
+}
+  } catch (error) {
+    console.error(error);
+
+    alert("AI Rewrite Failed");
+  } finally {
+    setIsRewriting(false);
+  }
+};
 
   /* ---------- SAVE ---------- */
 const handleSave = () => {
@@ -155,7 +220,15 @@ const handleSave = () => {
           </button>
 
           <div className="flex gap-3">
-
+           <button
+        onClick={handleAIRewrite}
+        disabled={isRewriting}
+        className="bg-violet-600 text-white px-4 py-2 rounded flex items-center gap-2"
+    >
+        {isRewriting
+            ? "Rewriting..."
+            : "✨ Rewrite with AI"}
+    </button>
             <button
               onClick={handleSave}
               className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2"

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom"; // ✅ UPDATED
 import {
   FileText,
@@ -23,19 +24,23 @@ import {
 } from "recharts";
 
 const ResultsPage = () => {
-  /* ================= RECEIVE ANALYSIS DATA ================= */
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const location = useLocation(); // ✅ ADDED
-  const navigate = useNavigate(); // ✅ ADDED
+  const analysisData = location.state;
 
-  // Analysis data passed from previous page
-  const analysisData = location.state; // ✅ ADDED
+  useEffect(() => {
+    if (!analysisData) {
+      navigate("/upload", { replace: true });
+    }
+  }, [analysisData, navigate]);
 
-  // 🚨 SAFETY: Redirect if user lands here without analysis data
   if (!analysisData) {
-    navigate("/upload");
     return null;
   }
+
+  /* ================= MOCK DATA (FALLBACK) ================= */
+ 
 
   /* ================= MOCK DATA (FALLBACK) ================= */
 
