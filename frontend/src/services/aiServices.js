@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/ai";
+const API = `${import.meta.env.VITE_BACKEND_URL}/api/ai`;
 
 export const rewriteResume = async (resume, jobDescription) => {
   const response = await axios.post(`${API}/rewrite`, {
