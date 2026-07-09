@@ -6,7 +6,15 @@ const cors = require("cors");
 const app = express();
 
 /* ===================== MIDDLEWARE ===================== */
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      process.env.FRONTEND_URL
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -31,6 +39,3 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-/* ===================== TEMPORARY DEBUG ===================== */
-// Remove this after confirming your API key loads correctly.
-console.log("Gemini API Key:", process.env.GEMINI_API_KEY);
