@@ -4,7 +4,7 @@ const router = express.Router();
 
 const {
   rewriteResumeController
-} = require("../controllers/aiController");
+} = require("../controllers/aicontroller");
 
 router.post("/rewrite", rewriteResumeController);
 
