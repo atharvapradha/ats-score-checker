@@ -12,7 +12,10 @@ import nltk
 import re
 
 # Download stopwords (common words like "the", "is", "and")
-nltk.download('stopwords')
+try:
+    nltk.data.find("corpora/stopwords")
+except LookupError:
+    nltk.download("stopwords")
 from nltk.corpus import stopwords
 
 # Create Flask app
@@ -181,5 +184,8 @@ def analyze():
     })
 
 # -------------------- RUN SERVER --------------------
+import os
+
 if __name__ == "__main__":
-    app.run(port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
