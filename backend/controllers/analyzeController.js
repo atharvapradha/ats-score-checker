@@ -5,7 +5,7 @@ exports.analyzeResume = async (req, res) => {
     const { resumeText, jobDescription } = req.body;
 
     // Call Python NLP service (use 127.0.0.1 instead of localhost)
-    const response = await axios.post("https://ats-score-checker-nlp.onrender.com", {
+    const response =await axios.post("https://ats-score-checker-nlp.onrender.com/analyze", {
       resume: resumeText,
       jobDescription: jobDescription
     });
