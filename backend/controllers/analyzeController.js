@@ -18,14 +18,25 @@ console.log(jobDescription);
     // Send NLP response back to frontend
     res.json(response.data);
 
-  } catch (error) {
-    // 🔍 Log real error in terminal (VERY IMPORTANT for debugging)
-    console.error("❌ NLP SERVICE ERROR:", error.message);
+ } catch (error) {
+  console.error("========== NLP ERROR ==========");
 
-    // Send meaningful error response
-    res.status(500).json({
-      error: "NLP Service Error",
-      details: error.message
-    });
+  console.error("Message:", error.message);
+
+  if (error.response) {
+    console.error("Status:", error.response.status);
+    console.error("Response Data:", error.response.data);
   }
+
+  if (error.request) {
+    console.error("Request was sent but no response received.");
+  }
+
+  console.error("==============================");
+
+  res.status(500).json({
+    error: "NLP Service Error",
+    details: error.message,
+  });
+}
 };
