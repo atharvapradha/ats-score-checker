@@ -1,42 +1,70 @@
 const axios = require("axios");
 
+// NLP service URL
+const NLP_URL =
+    process.env.NLP_URL ||
+    "https://ats-score-checker-nlp.onrender.com/analyze";
+
 exports.analyzeResume = async (req, res) => {
-  try {
-    const { resumeText, jobDescription } = req.body;
-    console.log("Resume Text:");
-console.log(resumeText);
+    try {
 
-console.log("Job Description:");
-console.log(jobDescription);
+        const { resumeText, jobDescription } = req.body;
 
-    // Call Python NLP service (use 127.0.0.1 instead of localhost)
-    const response =await axios.post("https://ats-score-checker-nlp.onrender.com/analyze", {
-      resume: resumeText,
-      jobDescription: jobDescription
-    });
+        console.log("========== ANALYZE REQUEST ==========");
+        console.log("Resume length:", resumeText?.length);
+        console.log("Job description length:", jobDescription?.length);
 
-    // Send NLP response back to frontend
-    res.json(response.data);
+        console.log("Calling NLP service...");
+        console.log("NLP URL:", NLP_URL);
 
- } catch (error) {
-  console.error("========== NLP ERROR ==========");
+        const response = await axios.post(
+            NLP_URL,
+            {
+                resume: resumeText,
+                jobDescription: jobDescription
+            },
+            {
+                timeout: 60000
+            }
+        );
 
-  console.error("Message:", error.message);
+        console.log("NLP service responded successfully");
+        console.log("NLP status:", response.status);
 
-  if (error.response) {
-    console.error("Status:", error.response.status);
-    console.error("Response Data:", error.response.data);
-  }
+        console.log("====================================");
 
-  if (error.request) {
-    console.error("Request was sent but no response received.");
-  }
+        res.json(response.data);
 
-  console.error("==============================");
+    } catch (error) {
 
-  res.status(500).json({
-    error: "NLP Service Error",
-    details: error.message,
-  });
-}
+        console.error("========== NLP ERROR ==========");
+
+        console.error("Message:", error.message);
+
+        if (error.response) {
+
+            console.error("STATUS:", error.response.status);
+
+            console.error(
+                "HEADERS:",
+                JSON.stringify(error.response.headers, null, 2)
+            );
+
+            console.error(
+                "DATA:",
+                JSON.stringify(error.response.data, null, 2)
+            );
+        }
+
+        if (error.request) {
+            console.error("Request was sent but no response received.");
+        }
+
+        console.error("==============================");
+
+        res.status(500).json({
+            error: "NLP Service Error",
+            details: error.message
+        });
+    }
 };
